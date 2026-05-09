@@ -23,6 +23,17 @@ class QueryHandlers:
     for device in devices:
       self._devices_map[device.ip_address] = device
 
+  @property
+  def device_ips(self) -> set[str]:
+    return set(self._devices_map)
+
+  def _device_for_remote(self, request: web.Request) -> Device:
+    device = self._devices_map.get(request.remote)
+    if device is None:
+      raise web.HTTPNotFound(
+          reason=f'No configured Hisense device matches request source {request.remote!r}.')
+    return device
+
   async def key_exchange_handler(self, request: web.Request) -> web.Response:
     """Handles a key exchange.
     Accepts the AC's random and time and pass its own.
@@ -39,7 +50,7 @@ class QueryHandlers:
       if key['ver'] != 1 or key['proto'] != 1 or key.get('sec'):
         logging.error(f'Invalid key exchange: {data}')
         raise web.HTTPBadRequest(reason=f'Invalid key exchange: {data}')
-      updated_keys = self._devices_map[request.remote].update_key(key)
+      updated_keys = self._device_for_remote(request).update_key(key)
     except KeyIdReplaced as e:
       logging.error(f'{e.title}\n{e.message}')
       return web.Response(status=HTTPStatus.NOT_FOUND.value, reason=f'{e.title}\n{e.message}')
@@ -51,7 +62,7 @@ class QueryHandlers:
     builds the JSON, encrypts and signs it, and sends it to the AC.
     """
     command = {}
-    device = self._devices_map[request.remote]
+    device = self._device_for_remote(request)
     command['seq_no'] = device.get_command_seq_no()
     try:
       command_entry = device.commands_queue.get_nowait()
@@ -66,7 +77,7 @@ class QueryHandlers:
     """Handles a property update request.
     Decrypts, validates, and pushes the value into the local properties store.
     """
-    device = self._devices_map[request.remote]
+    device = self._device_for_remote(request)
     post_data = await request.text()
     data = json.loads(post_data)
     try:

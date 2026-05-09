@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+- Added browser-friendly `GET` explanations on real Hisense/Ayla LAN endpoints.
+- Added root compatibility aliases for `/key_exchange.json` and `/commands.json`.
+- Kept `/local_lan/commands.json` as a real `GET` protocol endpoint for requests that come from the configured air conditioner IP.
+
 ## 1.0.0
 
 - Converted the project from a Docker/Home Assistant add-on MQTT bridge into a native HACS custom integration.

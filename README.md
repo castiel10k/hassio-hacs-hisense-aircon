@@ -63,6 +63,8 @@ The air conditioner must be able to reach Home Assistant by plain HTTP on the co
 - `/local_lan/node/property/datapoint.json`
 - `/local_lan/node/property/datapoint/ack.json`
 
+For a quick browser check after the integration is loaded, open any endpoint directly. It will return a small JSON explanation when the browser method is not the real device protocol call. The `/local_lan/commands.json` endpoint is special: the air conditioner uses `GET` there, so browser checks from non-device IP addresses get the explanation while requests from the configured air conditioner IP get the real command response.
+
 If Home Assistant has several IP addresses or VLAN interfaces, set the **Home Assistant local IP address** option explicitly.
 
 ## Supported App Codes

@@ -116,7 +116,9 @@ class HisenseController:
     if domain_data.get(VIEWS_REGISTERED):
       return
     self.hass.http.register_view(HisenseKeyExchangeView())
+    self.hass.http.register_view(HisenseKeyExchangeRootView())
     self.hass.http.register_view(HisenseCommandsView())
+    self.hass.http.register_view(HisenseCommandsRootView())
     self.hass.http.register_view(HisensePropertyDatapointView())
     self.hass.http.register_view(HisensePropertyDatapointAckView())
     self.hass.http.register_view(HisenseNodePropertyDatapointView())
@@ -129,6 +131,23 @@ def _controller_from_request(request: web.Request) -> HisenseController:
   return hass.data[DOMAIN][ACTIVE_CONTROLLER]
 
 
+def _endpoint_info(url: str, protocol_methods: list[str]) -> web.Response:
+  return web.json_response({
+      "ok": True,
+      "endpoint": url,
+      "protocol_methods": protocol_methods,
+      "message": (
+          "Hisense Air Conditioner endpoint is registered. This browser response is only "
+          "a connectivity hint; the air conditioner uses the listed protocol method(s) "
+          "with Ayla LAN JSON payloads."
+      ),
+      "read_more": (
+          "The real device protocol path is intentionally kept under /local_lan because "
+          "Hisense/Ayla devices are registered with that callback URI."
+      ),
+  })
+
+
 class HisenseKeyExchangeView(HomeAssistantView):
   """Ayla LAN key exchange endpoint."""
 
@@ -136,8 +155,18 @@ class HisenseKeyExchangeView(HomeAssistantView):
   name = "api:hisense_aircon:key_exchange"
   requires_auth = False
 
+  async def get(self, request: web.Request) -> web.Response:
+    return _endpoint_info(self.url, ["POST"])
+
   async def post(self, request: web.Request) -> web.Response:
     return await _controller_from_request(request).handlers.key_exchange_handler(request)
+
+
+class HisenseKeyExchangeRootView(HisenseKeyExchangeView):
+  """Compatibility alias for manual endpoint checks."""
+
+  url = "/key_exchange.json"
+  name = "api:hisense_aircon:key_exchange_root"
 
 
 class HisenseCommandsView(HomeAssistantView):
@@ -148,7 +177,17 @@ class HisenseCommandsView(HomeAssistantView):
   requires_auth = False
 
   async def get(self, request: web.Request) -> web.Response:
+    controller = _controller_from_request(request)
+    if request.remote not in controller.handlers.device_ips:
+      return _endpoint_info(self.url, ["GET"])
     return await _controller_from_request(request).handlers.command_handler(request)
+
+
+class HisenseCommandsRootView(HisenseCommandsView):
+  """Compatibility alias for manual endpoint checks."""
+
+  url = "/commands.json"
+  name = "api:hisense_aircon:commands_root"
 
 
 class HisensePropertyDatapointView(HomeAssistantView):
@@ -157,6 +196,9 @@ class HisensePropertyDatapointView(HomeAssistantView):
   url = "/local_lan/property/datapoint.json"
   name = "api:hisense_aircon:property_datapoint"
   requires_auth = False
+
+  async def get(self, request: web.Request) -> web.Response:
+    return _endpoint_info(self.url, ["POST"])
 
   async def post(self, request: web.Request) -> web.Response:
     return await _controller_from_request(request).handlers.property_update_handler(request)
