@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.2
+
+- Fixed the collapsed Advanced Settings section so default values do not block cloud setup validation.
+- Fixed Home Assistant section translations so the Advanced Settings heading and help text are visible.
+- Added direct setup links to the Supported App Codes README section and corrected manifest repository links.
+
 ## 1.1.1
 
 - Improved README documentation with upstream device notes, app-code prerequisites, and available properties.

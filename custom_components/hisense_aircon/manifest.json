@@ -4,15 +4,15 @@
   "codeowners": [],
   "config_flow": true,
   "dependencies": ["http"],
-  "documentation": "https://github.com/cvladan/hassio-hacs-hisense-aircon-codex",
+  "documentation": "https://github.com/cvladan/hassio-hacs-hisense-aircon",
   "integration_type": "hub",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/cvladan/hassio-hacs-hisense-aircon-codex/issues",
+  "issue_tracker": "https://github.com/cvladan/hassio-hacs-hisense-aircon/issues",
   "requirements": [
     "dataclasses-json==0.6.7",
     "getmac==0.9.5",
     "pycryptodome==3.23.0"
   ],
   "single_config_entry": true,
-  "version": "1.1.1"
+  "version": "1.1.2"
 }

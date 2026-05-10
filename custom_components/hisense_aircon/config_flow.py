@@ -47,6 +47,12 @@ from .discovery import perform_discovery
 _LOGGER = logging.getLogger(__name__)
 
 _ADVANCED_SETTINGS = "advanced_settings"
+_DEFAULT_ADVANCED_SETTINGS = {
+    CONF_DEVICE_NAME: "",
+    CONF_LOCAL_IP: "",
+    CONF_CALLBACK_PORT: DEFAULT_CALLBACK_PORT,
+    CONF_STATUS_INTERVAL: DEFAULT_STATUS_INTERVAL,
+}
 
 
 class HisenseConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -130,13 +136,13 @@ class HisenseConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required(CONF_USERNAME): str,
             vol.Required(CONF_PASSWORD):
                 TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)),
-            vol.Optional(_ADVANCED_SETTINGS, default={}):
+            vol.Required(_ADVANCED_SETTINGS, default=_DEFAULT_ADVANCED_SETTINGS):
                 section(
                     vol.Schema({
                         vol.Optional(CONF_DEVICE_NAME, default=""): str,
                         vol.Optional(CONF_LOCAL_IP, default=""): str,
-                        vol.Required(CONF_CALLBACK_PORT, default=DEFAULT_CALLBACK_PORT): int,
-                        vol.Required(CONF_STATUS_INTERVAL, default=DEFAULT_STATUS_INTERVAL): int,
+                        vol.Optional(CONF_CALLBACK_PORT, default=DEFAULT_CALLBACK_PORT): int,
+                        vol.Optional(CONF_STATUS_INTERVAL, default=DEFAULT_STATUS_INTERVAL): int,
                     }),
                     {"collapsed": True},
                 ),
