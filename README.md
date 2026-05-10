@@ -211,3 +211,7 @@ Then install **Hisense Air Conditioner** and restart Home Assistant.
 The LAN protocol implementation is based on the original Ayla/Hisense AirCon project logic and has been repackaged as a native Home Assistant custom integration.
 
 This project is not affiliated with Hisense, Ayla Networks, Fujitsu, or their subsidiaries.
+
+## Technical Notes
+
+This integration uses Home Assistant's shared `aiohttp` client session and HTTP view stack. `aiohttp` is managed by Home Assistant itself and is not pinned in this integration's `manifest.json` requirements.
