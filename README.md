@@ -69,9 +69,14 @@ Use this if the device is still visible in the original mobile app.
    - app code, for example `hisense-eu`, `hisense-us`, `fglair-eu`
    - app username
    - app password
-   - optional device name filter
-   - Home Assistant HTTP port, usually `8123`
-   - optional Home Assistant local IP if HA has multiple network interfaces or VLANs
+7. Select one or more discovered air conditioners to add. All discovered devices are selected by default.
+
+Advanced settings are optional and can usually stay collapsed:
+
+- device name filter, if you want discovery to look for only one exact app device name
+- Home Assistant HTTP port, usually `8123`
+- optional Home Assistant local IP if HA has multiple network interfaces or VLANs
+- device temperature unit override, if the automatic app-code detection reports the wrong unit
 
 ### Manual LAN Key Setup
 

@@ -55,6 +55,7 @@ from .discovery import perform_discovery
 _LOGGER = logging.getLogger(__name__)
 
 _ADVANCED_SETTINGS = "advanced_settings"
+_SELECTED_DEVICES = "selected_devices"
 _DEFAULT_ADVANCED_SETTINGS = {
     CONF_DEVICE_NAME: "",
     CONF_LOCAL_IP: "",
@@ -125,22 +126,17 @@ class HisenseConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                   temp_type,
               ) for device in discovered
           ]
-          await self.async_set_unique_id(_unique_id(devices))
-          self._abort_if_unique_id_configured()
-          title = ", ".join(device["name"] for device in devices)
-          return self.async_create_entry(
-              title=title,
-              data={
-                  CONF_APP: user_input[CONF_APP],
-                  CONF_DEVICES: devices,
-                  CONF_LOCAL_IP: _blank_to_none(advanced_settings.get(CONF_LOCAL_IP)),
-                  CONF_CALLBACK_PORT: advanced_settings.get(CONF_CALLBACK_PORT,
-                                                            DEFAULT_CALLBACK_PORT),
-                  CONF_STATUS_INTERVAL: advanced_settings.get(CONF_STATUS_INTERVAL,
-                                                              DEFAULT_STATUS_INTERVAL),
-                  CONF_TEMP_TYPE: temp_type,
-              },
-          )
+          self._cloud_setup = {
+              CONF_APP: user_input[CONF_APP],
+              CONF_DEVICES: devices,
+              CONF_LOCAL_IP: _blank_to_none(advanced_settings.get(CONF_LOCAL_IP)),
+              CONF_CALLBACK_PORT: advanced_settings.get(CONF_CALLBACK_PORT,
+                                                        DEFAULT_CALLBACK_PORT),
+              CONF_STATUS_INTERVAL: advanced_settings.get(CONF_STATUS_INTERVAL,
+                                                          DEFAULT_STATUS_INTERVAL),
+              CONF_TEMP_TYPE: temp_type,
+          }
+          return await self.async_step_select_devices()
 
     return self.async_show_form(
         step_id="cloud",
@@ -170,6 +166,48 @@ class HisenseConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     }),
                     {"collapsed": True},
                 ),
+        }),
+        errors=errors,
+    )
+
+  async def async_step_select_devices(self, user_input: dict[str, Any] | None = None):
+    """Select one or more discovered devices."""
+    cloud_setup = getattr(self, "_cloud_setup", None)
+    if cloud_setup is None:
+      return await self.async_step_cloud()
+
+    errors: dict[str, str] = {}
+    devices = cloud_setup[CONF_DEVICES]
+    if user_input is not None:
+      selected = set(user_input.get(_SELECTED_DEVICES, []))
+      selected_devices = [device for device in devices if device["mac_address"] in selected]
+      if not selected_devices:
+        errors["base"] = "no_device_selected"
+      else:
+        await self.async_set_unique_id(_unique_id(selected_devices))
+        self._abort_if_unique_id_configured()
+        title = ", ".join(device["name"] for device in selected_devices)
+        return self.async_create_entry(
+            title=title,
+            data={
+                **cloud_setup,
+                CONF_DEVICES: selected_devices,
+            },
+        )
+
+    return self.async_show_form(
+        step_id="select_devices",
+        data_schema=vol.Schema({
+            vol.Required(
+                _SELECTED_DEVICES,
+                default=[device["mac_address"] for device in devices],
+            ):
+                SelectSelector(
+                    SelectSelectorConfig(
+                        options=[_device_option(device) for device in devices],
+                        multiple=True,
+                        mode=SelectSelectorMode.DROPDOWN,
+                    )),
         }),
         errors=errors,
     )
@@ -293,6 +331,11 @@ def _blank_to_none(value: str | None) -> str | None:
 
 def _normalize_mac(mac_address: str) -> str:
   return mac_address.replace(":", "").replace("-", "").lower()
+
+
+def _device_option(device: dict[str, Any]) -> dict[str, str]:
+  label = f"{device['name']} ({device['ip_address']})"
+  return {"value": device["mac_address"], "label": label}
 
 
 def _ha_temp_type(hass) -> str:

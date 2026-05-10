@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.4
+
+- Added an explicit cloud discovery step for selecting one or more discovered air conditioners.
+- Selected all discovered devices by default so multi-device accounts can be added in one setup flow.
+- Updated setup documentation to describe the multi-device selection step.
+
 ## 1.1.3
 
 - Added configurable device temperature units for cloud setup and integration options.

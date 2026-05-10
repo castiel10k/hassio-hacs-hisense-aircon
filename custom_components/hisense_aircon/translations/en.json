@@ -40,6 +40,13 @@
           }
         }
       },
+      "select_devices": {
+        "title": "Select Hisense devices",
+        "description": "Choose one or more discovered air conditioners to add. All discovered devices are selected by default.",
+        "data": {
+          "selected_devices": "Devices"
+        }
+      },
       "manual": {
         "title": "Manual LAN key setup",
         "data": {
@@ -61,7 +68,8 @@
     "error": {
       "cannot_connect": "Could not connect to the Hisense/Ayla service or the credentials were rejected.",
       "device_not_found": "No matching device was found.",
-      "invalid_manual_config": "Manual configuration is incomplete or invalid."
+      "invalid_manual_config": "Manual configuration is incomplete or invalid.",
+      "no_device_selected": "Select at least one device."
     },
     "abort": {
       "already_configured": "This device is already configured."
