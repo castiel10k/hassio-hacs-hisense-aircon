@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.7
+
+- Run the LAN notifier and status polling loops as background tasks so they do not delay Home Assistant startup.
+
 ## 1.1.6
 
 - Scheduled entity state writes on the Home Assistant event loop so LAN availability and property updates are applied safely from update callbacks.

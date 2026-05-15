@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Coroutine
 
 from aiohttp import web
 
@@ -75,9 +75,29 @@ class HisenseController:
       device.add_property_change_listener(self._handle_property_update)
 
     session = async_get_clientsession(self.hass)
-    self._tasks.append(self.hass.async_create_task(self._notifier.start(session)))
+    self._tasks.append(
+        self._create_background_task(
+            self._notifier.start(session),
+            "hisense_aircon notifier",
+        )
+    )
     for device in self.devices:
-      self._tasks.append(self.hass.async_create_task(self._query_status_device(device)))
+      self._tasks.append(
+          self._create_background_task(
+              self._query_status_device(device),
+              f"hisense_aircon status poll {device.mac_address}",
+          )
+      )
+
+  def _create_background_task(
+      self, coro: Coroutine[Any, Any, Any], name: str
+  ) -> asyncio.Task[Any]:
+    """Create long-running work without holding up Home Assistant startup."""
+    if hasattr(self.entry, "async_create_background_task"):
+      return self.entry.async_create_background_task(self.hass, coro, name)
+    if hasattr(self.hass, "async_create_background_task"):
+      return self.hass.async_create_background_task(coro, name)
+    return self.hass.async_create_task(coro)
 
   async def async_stop(self) -> None:
     """Stop background work."""
