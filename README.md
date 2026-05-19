@@ -1,5 +1,8 @@
 # HiSense Air Conditioners
 
+> [!IMPORTANT]
+> This integration does not support ConnectLife app air conditioners. For those devices, you may want to try [oyvindwe/connectlife-ha](https://github.com/oyvindwe/connectlife-ha), though this has not been verified here.
+
 Native Home Assistant custom integration for Hisense/Ayla LAN air conditioners.
 
 This repository is now structured for HACS. It no longer runs as a Docker container, Home Assistant add-on, MQTT bridge, or external Python service. Home Assistant hosts the local Ayla LAN endpoints directly and communicates with the device on your local network.
