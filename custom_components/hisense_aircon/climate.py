@@ -115,7 +115,12 @@ class HisenseClimate(HisenseEntity, ClimateEntity):
   def current_temperature(self) -> float | None:
     """Return current room temperature."""
     prop = self.device.topics.get("env_temp") or self.device.topics.get("display_temperature")
-    return self.device.get_property(prop) if prop else None
+    if prop:
+        temp = self.device.get_property(prop)
+        if temp is not None:
+            # Round to nearest whole number (e.g., 27.2 becomes 27, 27.6 becomes 28)
+            return int(float(temp) + 0.5)
+    return None
 
   @property
   def current_humidity(self) -> int | None:
