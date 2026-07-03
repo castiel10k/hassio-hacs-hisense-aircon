@@ -97,7 +97,9 @@ class HisenseClimate(HisenseEntity, ClimateEntity):
   @property
   def min_temp(self) -> float:
     """Return minimum target temperature."""
-    return 61 if self.device.is_fahrenheit else 16
+    # CHANGED: Lowered from 61 to 60 so Home Assistant accepts 60.8F (16C) 
+    # without throwing a validation error. The actual clamping happens below.
+    return 60 if self.device.is_fahrenheit else 16
 
   @property
   def max_temp(self) -> float:
@@ -205,7 +207,18 @@ class HisenseClimate(HisenseEntity, ClimateEntity):
   async def async_set_temperature(self, **kwargs: Any) -> None:
     """Set target temperature."""
     if (temperature := kwargs.get(ATTR_TEMPERATURE)) is not None:
-      self.device.queue_command(self.device.topics["temp"], temperature)
+      # CHANGED: Round to nearest integer to prevent decimal errors like 60.8
+      # Adding 0.5 ensures that .8 rounds up to the next integer (16C -> 60.8F -> 61F)
+      rounded_temp = int(float(temperature) + 0.5)
+      
+      # CHANGED: Clamp to the device's actual accepted range to prevent device rejection
+      if self.device.is_fahrenheit:
+          rounded_temp = max(61, min(86, rounded_temp))
+      else:
+          rounded_temp = max(16, min(30, rounded_temp))
+          
+      self.device.queue_command(self.device.topics["temp"], rounded_temp)
+      
     if (hvac_mode := kwargs.get("hvac_mode")) is not None:
       await self.async_set_hvac_mode(hvac_mode)
     self.async_write_ha_state()
